@@ -1,11 +1,11 @@
-const Vast = require('../sequelize');
+const vastService = require('../services/vast.service');
 const BASE_URL = '/vast';
 
 module.exports = (app) => {
     app.get(`${BASE_URL}/all`, async (req, res) => {
-        vasts = await Vast.findAll();
-        console.log(JSON.stringify(vasts));
-        
+        vasts = await vastService.showAll();
+        // vastService.testService();
+
         if (!vasts)  {
             res.send({error: 'no vasts found'});
         }
@@ -15,11 +15,9 @@ module.exports = (app) => {
     });
 
     app.get(BASE_URL, async (req, res) => {
+        const vastId = req.query.id;
         console.log('vastId: ' + req.query.id);
-        vast = await Vast.findOne({
-            where: { id: req.query.id }
-        });
-        console.log(JSON.stringify(vast));
+        let vast = await vastService.getVastXml(vastId);
         
         if (!vast)  {
             res.send({error: 'no vasts found'});
@@ -30,15 +28,14 @@ module.exports = (app) => {
         });
 
     app.post(BASE_URL, async (req, res) => {
-        const data = {
+        const vast = {
             vast_url: req.body.vast_url,
             position: req.body.position,
             width: req.body.width,
             height: req.body.height
         };
 
-        console.log('new vast data: ' + JSON.stringify(data));
-        const newVastInDb = await Vast.create(data);
+        const newVastInDb = await vastService.create(vast);
         console.log(JSON.stringify(newVastInDb));
         res.send(newVastInDb);
     });
